@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Juego del Impostor 🤫</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .panel {
+      display: none;
+      padding: 2rem;
+    }
+    .active {
+      display: block;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin: 1rem auto;
+      max-width: 500px;
+      box-shadow: 0 0 15px rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    input, select, button {
+      padding: 0.7rem;
+      margin: 0.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      outline: none;
+    }
+    input[type="text"], input[type="number"], select {
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #333;
+      width: 100%;
+      max-width: 300px;
+    }
+    button {
+      background-color: #00c6ff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0072ff;
+    }
+    .result {
+      font-size: 1.5rem;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    #impostorRolHidden {
+      background-color: black;
+      color: black;
+      border-radius: 0.3rem;
+      display: inline-block;
+      min-width: 200px;
+      min-height: 2.5rem;
+      line-height: 2.5rem;
+      user-select: none;
+      font-weight: bold;
+      font-size: 1.5rem;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    #impostorRolHidden.visible {
+      background-color: transparent;
+      color: white;
+    }
+    #nombres p {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      margin: 0.5rem auto;
+      width: fit-content;
+    }
+    #reiniciar {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      background-color: #ff0040;
+      padding: 0.7rem 1rem;
+      border-radius: 0.8rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="panel active" id="inicio">
+    <div class="card">
+      <h1>🎭 Bienvenidos al Juego del Impostor</h1>
+      <p>¿Listos para engañar o descubrir al impostor? 🔍😈</p>
+      <button onclick="cambiarPanel('jugadores')">🚀 Empezar</button>
+    </div>
+  </div>
+
+  <div class="panel" id="jugadores">
+    <div class="card">
+      <h2>👥 Añadir Jugadores</h2>
+      <input type="text" id="nuevoJugador" placeholder="Nombre del jugador" />
+      <button onclick="agregarJugador()">➕ Añadir jugador</button>
+      <div id="nombres"></div>
+      <button onclick="cambiarPanel('tematicas')">✅ Siguiente</button>
+    </div>
+  </div>
+
+  <div class="panel" id="tematicas">
+    <div class="card">
+      <h2>📚 Elige una temática</h2>
+      <select id="selectTematica">
+        <option value="" disabled selected>-- Selecciona una temática --</option>
+        <option value="Animales">Animales 🐶🐱</option>
+        <option value="Comida">Comida 🍕🍔</option>
+        <option value="Películas">Películas 🎬🍿</option>
+        <option value="Deportes">Deportes ⚽🏀</option>
+        <option value="Países">Países 🌍✈️</option>
+        <option value="Tecnología">Tecnología 💻📱</option>
+        <option value="Frutas">Frutas 🍎🍌</option>
+        <option value="Instrumentos musicales">Instrumentos musicales 🎸🎹</option>
+        <option value="Colores">Colores 🎨🌈</option>
+        <option value="Vehículos">Vehículos 🚗✈️</option>
+        <option value="Profesiones">Profesiones 👨‍⚕️👩‍🏫</option>
+        <option value="Videojuegos">Videojuegos 🎮🕹️</option>
+        <option value="Animales marinos">Animales marinos 🐠🐬</option>
+        <option value="Libros">Libros 📚📖</option>
+        <option value="Fiestas">Fiestas 🎉🎊</option>
+        <option value="Flores">Flores 🌹🌻</option>
+        <option value="Superhéroes">Superhéroes 🦸‍♂️🦸‍♀️</option>
+        <option value="Planetas">Planetas 🪐🌌</option>
+        <option value="Elementos químicos">Elementos químicos 🧪⚗️</option>
+        <option value="Animales salvajes">Animales salvajes 🦁🐘</option>
+        <option value="Postres">Postres 🍰🍩</option>
+        <option value="Instrumentos de cocina">Instrumentos de cocina 🍳🔪</option>
+        <option value="Medios de transporte">Medios de transporte 🚂🛥️</option>
+        <option value="Marcas famosas">Marcas famosas 🏢💼</option>
+        <option value="Ríos y lagos">Ríos y lagos 🌊🏞️</option>
+        <option value="Peces">Peces 🐟🐠</option>
+        <option value="Dinosaurios">Dinosaurios 🦕🦖</option>
+      </select>
+      <br/>
+      <button onclick="continuarConfiguracion()">✅ Siguiente</button>
+    </div>
+  </div>
+
+  <div class="panel" id="configuracion">
+    <div class="card">
+      <h2>⚙️ Configurar Juego</h2>
+      <p>¿Cuántos impostores habrá?</p>
+      <input type="number" id="numImpostores" min="1" />
+      <button onclick="asignarRoles()">🔮 Asignar roles</button>
+    </div>
+  </div>
+
+  <div class="panel" id="revelacion">
+    <div class="card">
+      <h2>🔍 Consultar Rol</h2>
+      <p>Introduce tu nombre:</p>
+      <input type="text" id="nombreConsulta" />
+      <button onclick="consultarRol()">👁️ Ver mi rol</button>
+      <div class="result" id="resultado"></div>
+    </div>
+    <button id="reiniciar" onclick="reiniciarJuego()">🔁 Reiniciar</button>
+  </div>
+
+<script>
+  let jugadores = [];
+  let impostores = [];
+  let palabra = "";
+  let tematicaSeleccionada = "";
+
+  const tematicasPalabras = {
+    "Animales": ["perro", "gato", "elefante", "jirafa", "león", "tigre", "oso", "lobo", "zorro", "conejo", "águila", "búho", "delfín", "cocodrilo"],
+    "Comida": ["pizza", "hamburguesa", "ensalada", "paella", "sopa", "taco", "pollo", "arroz", "pescado", "pan", "queso", "helado", "chocolate", "pastel"],
+    "Películas": ["acción", "comedia", "drama", "terror", "animación", "romance", "ciencia ficción", "aventura", "misterio", "documental"],
+    "Deportes": ["fútbol", "baloncesto", "tenis", "natación", "ciclismo", "voleibol", "boxeo", "golf", "rugby", "atletismo"],
+    "Países": ["españa", "francia", "alemania", "italia", "japón", "china", "brasil", "argentina", "canadá", "australia"],
+    "Tecnología": ["ordenador", "teléfono", "robot", "internet", "software", "hardware", "inteligencia artificial", "dron", "impresora", "tableta"],
+    "Frutas": ["manzana", "plátano", "naranja", "fresa", "pera", "melocotón", "sandía", "piña", "cereza", "mango"],
+    "Instrumentos musicales": ["guitarra", "piano", "batería", "violín", "flauta", "saxofón", "trompeta", "arpa", "clarinete", "acordeón"],
+    "Colores": ["rojo", "azul", "verde", "amarillo", "negro", "blanco", "naranja", "morado", "rosa", "gris"],
+    "Vehículos": ["coche", "avión", "barco", "tren", "bicicleta", "moto", "camión", "autobús", "submarino", "helicóptero"],
+    "Profesiones": ["médico", "profesor", "bombero", "ingeniero", "abogado", "policía", "enfermero", "arquitecto", "chef", "periodista"],
+    "Videojuegos": ["aventura", "acción", "estrategia", "rol", "disparo", "simulación", "deportes", "arcade", "puzzle", "lucha"],
+    "Animales marinos": ["delfín", "tiburón", "pulpo", "medusa", "estrella de mar", "ballena", "cangrejo", "langosta", "pez payaso", "foca"],
+    "Libros": ["novela", "poesía", "historia", "ciencia", "fantasía", "biografía", "ensayo", "drama", "aventura", "misterio"],
+    "Fiestas": ["cumpleaños", "navidad", "halloween", "carnaval", "año nuevo", "pascua", "bodas", "fiesta sorpresa", "aniversario", "graduación"],
+    "Flores": ["rosa", "girasol", "tulipán", "margarita", "jazmín", "orquídea", "lirio", "clavel", "violeta", "azucena"],
+    "Superhéroes": ["spiderman", "batman", "superman", "ironman", "thor", "hulk", "capitán américa", "wonder woman", "flash", "black widow"],
+    "Planetas": ["marte", "venus", "júpiter", "saturno", "urano", "neptuno", "tierra", "mercurio", "plutón", "luna"],
+    "Elementos químicos": ["hidrógeno", "helio", "oxígeno", "carbono", "nitrógeno", "hierro", "oro", "plata", "cobre", "mercurio"],
+    "Animales salvajes": ["león", "elefante", "tigre", "rinoceronte", "hipopótamo", "búfalo", "chimpancé", "gorila", "cocodrilo", "jaguar"],
+    "Postres": ["pastel", "flan", "helado", "tarta", "galleta", "brownie", "chocolate", "donut", "crema catalana", "pudin"],
+    "Instrumentos de cocina": ["cuchillo", "sartén", "olla", "batidora", "taza", "cuchara", "tenedor", "tabla de cortar", "colador", "rallador"],
+    "Medios de transporte": ["bicicleta", "metro", "autobús", "coche", "tren", "avión", "barco", "moto", "taxi", "tranvía"],
+    "Marcas famosas": ["nike", "adidas", "apple", "samsung", "coca-cola", "google", "microsoft", "facebook", "toyota", "bmw"],
+    "Ríos y lagos": ["amazonas", "nilo", "támesis", "tigre", "éufrates", "victoria", "baikal", "titicaca", "hurón", "michigan"],
+    "Peces": ["salmón", "atún", "bacalao", "merluza", "trucha", "pez payaso", "pez globo", "carpa", "pez espada", "lenguado"],
+    "Dinosaurios": ["tiranosaurio", "velociraptor", "braquiosaurio", "triceratops", "estegosaurio", "diplodocus", "anquilosaurio", "pterodáctilo", "allosaurio", "iguanodon"]
+  };
+
+  function cambiarPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function agregarJugador() {
+    const input = document.getElementById("nuevoJugador");
+    const nombre = input.value.trim();
+    if (!nombre) {
+      alert("Por favor, introduce un nombre válido.");
+      return;
+    }
+    if (jugadores.includes(nombre)) {
+      alert("Este jugador ya ha sido añadido.");
+      return;
+    }
+    jugadores.push(nombre);
+    document.getElementById("nombres").innerHTML += `<p>👤 ${nombre}</p>`;
+    input.value = "";
+  }
+
+  function continuarConfiguracion() {
+    const select = document.getElementById("selectTematica");
+    if (!select.value) {
+      alert("Por favor, selecciona una temática.");
+      return;
+    }
+    tematicaSeleccionada = select.value;
+    cambiarPanel('configuracion');
+  }
+
+  async function asignarRoles() {
+    const numImp = parseInt(document.getElementById("numImpostores").value);
+
+    if (!numImp || numImp >= jugadores.length || numImp < 1) {
+      alert("Número de impostores no válido. Debe ser al menos 1 y menor que el total de jugadores.");
+      return;
+    }
+    if (jugadores.length < 3) {
+      alert("Necesitas al menos 3 jugadores para empezar el juego.");
+      return;
+    }
+
+    impostores = [...jugadores].sort(() => 0.5 - Math.random()).slice(0, numImp);
+
+    const palabras = tematicasPalabras[tematicaSeleccionada];
+    if (!palabras || palabras.length === 0) {
+      alert("No hay palabras para esta temática. Por favor selecciona otra.");
+      cambiarPanel('tematicas');
+      return;
+    }
+
+    palabra = palabras[Math.floor(Math.random() * palabras.length)].toLowerCase();
+
+    cambiarPanel('revelacion');
+    alert("Roles asignados. Cada jugador puede consultar su rol ahora.");
+  }
+
+  function toggleImpostorRoleVisibility() {
+    const impostorRole = document.getElementById("impostorRolHidden");
+    if (impostorRole) {
+      impostorRole.classList.toggle("visible");
+      const button = document.getElementById("toggleImpostorButton");
+      button.textContent = impostorRole.classList.contains("visible") ? "🙈 Ocultar rol" : "👁️ Mostrar rol";
+    }
+  }
+
+  function consultarRol() {
+    const inputConsulta = document.getElementById("nombreConsulta");
+    const nombre = inputConsulta && inputConsulta.value ? inputConsulta.value.trim() : "";
+    const resultado = document.getElementById("resultado");
+
+    if (!jugadores.includes(nombre)) {
+      resultado.innerHTML = "❌ Nombre no encontrado. Asegúrate de haberlo escrito correctamente y de que haya sido añadido.";
+      return;
+    }
+
+    let textoVisible = impostores.includes(nombre) ? "IMPOSTOR" : palabra;
+
+    resultado.innerHTML = `
+      <span id="impostorRolHidden">${textoVisible}</span><br>
+      <button id="toggleImpostorButton" onclick="toggleImpostorRoleVisibility()">👁️ Mostrar rol</button>
+    `;
+    inputConsulta.value = '';
+  }
+
+  function reiniciarJuego() {
+    jugadores = [];
+    impostores = [];
+    palabra = "";
+    tematicaSeleccionada = "";
+    document.getElementById("nuevoJugador").value = "";
+    document.getElementById("nombreConsulta").value = "";
+    document.getElementById("nombres").innerHTML = "";
+    document.getElementById("resultado").innerHTML = "";
+    document.getElementById("numImpostores").value = "";
+    document.getElementById("selectTematica").selectedIndex = 0;
+    cambiarPanel('inicio');
+  }
+</script>
+
+</body>
+</html>
