@@ -77,25 +77,67 @@
       background-color: transparent;
       color: white;
     }
-    #nombres p {
+    #nombres p,
+    .voto-celda {
       background: rgba(255, 255, 255, 0.1);
       border-radius: 0.5rem;
       padding: 0.5rem 1rem;
       margin: 0.5rem auto;
       width: fit-content;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+    .voto-celda .nombre {
+      flex: 1;
+      text-align: left;
+    }
+    .voto-celda .contador {
+      font-weight: bold;
+      margin: 0 1rem;
+      min-width: 2ch;
+    }
+    .voto-celda button {
+      padding: 0.4rem 1rem;
+      font-size: 1rem;
+      background-color: #00c6ff;
+      color: white;
+      border-radius: 0.5rem;
+      border: none;
+      margin-left: 0.5rem;
+      margin-right: 0.2rem;
+      transition: background-color 0.3s;
+    }
+    .voto-celda button:hover {
+      background-color: #0072ff;
     }
     #reiniciar {
-      position: fixed;
-      bottom: 15px;
-      right: 15px;
       background-color: #ff0040;
       padding: 0.7rem 1rem;
       border-radius: 0.8rem;
       font-weight: bold;
+      margin-top: 2rem;
+      position: static;
+    }
+    #resultadoFinal {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin: 1.5rem 0 1rem 0;
+      text-shadow: 0 1px 20px #00c6ff, 0 1px 2px #333;
+    }
+    #masVotado {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin: 1rem 0 0.5rem 0;
+      color: #00fff7;
+      text-shadow: 0 1px 10px #0099ff, 0 1px 2px #111;
     }
   </style>
 </head>
 <body>
+
+  <button id="reiniciar" onclick="reiniciarJuego()" style="position:fixed;top:15px;left:15px;z-index:999;">🔁 Reiniciar</button>
 
   <div class="panel active" id="inicio">
     <div class="card">
@@ -170,8 +212,24 @@
       <input type="text" id="nombreConsulta" />
       <button onclick="consultarRol()">👁️ Ver mi rol</button>
       <div class="result" id="resultado"></div>
+      <button style="margin-top:2rem;" onclick="cambiarPanel('votaciones')">🗳️ Ir a votaciones</button>
     </div>
-    <button id="reiniciar" onclick="reiniciarJuego()">🔁 Reiniciar</button>
+  </div>
+
+  <div class="panel" id="votaciones">
+    <div class="card">
+      <h2>🗳️ Votaciones</h2>
+      <div id="listaVotaciones"></div>
+      <button onclick="terminarVotacion()" style="margin-top:2rem;font-size:1.2rem;">Terminar votación</button>
+    </div>
+  </div>
+
+  <div class="panel" id="resultadoPanel">
+    <div class="card">
+      <div id="masVotado"></div>
+      <div id="resultadoFinal"></div>
+      <button onclick="volverAVotar()" style="margin-top:2rem;">⬅️ Volver a votar</button>
+    </div>
   </div>
 
 <script>
@@ -179,6 +237,8 @@
   let impostores = [];
   let palabra = "";
   let tematicaSeleccionada = "";
+  let votos = {}; // {nombre: cantidad}
+  let maxVotosPorJugador = 0;
 
   const tematicasPalabras = {
     "Familia": ["Salma", "Otman", "Aya", "Nadia", "Aziza", "Yasin", "Zakaria", "Awatif", "Saad", "Allal", "Ahmed", "Saadia", "Mohamed", "Abderazak", "Asil", "Basma", "Yasmin", "Ahlam", "Fatima", "Abdelali", "JessicaRazin"],
@@ -214,6 +274,9 @@
   function cambiarPanel(id) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    if(id === 'votaciones') {
+      mostrarVotaciones();
+    }
   }
 
   function agregarJugador() {
@@ -264,6 +327,9 @@
     }
 
     palabra = palabras[Math.floor(Math.random() * palabras.length)].toLowerCase();
+    votos = {};
+    maxVotosPorJugador = jugadores.length * 2;
+    jugadores.forEach(nombre => votos[nombre] = 0);
 
     cambiarPanel('revelacion');
     alert("Roles asignados. Cada jugador puede consultar su rol ahora.");
@@ -297,17 +363,100 @@
     inputConsulta.value = '';
   }
 
+  function mostrarVotaciones() {
+    const lista = document.getElementById("listaVotaciones");
+    lista.innerHTML = "";
+    jugadores.forEach((nombre, idx) => {
+      lista.innerHTML += `
+        <div class="voto-celda" id="voto-celda-${idx}">
+          <span class="nombre">👤 ${nombre}</span>
+          <button onclick="sumarVoto('${nombre}')" ${votos[nombre]>=maxVotosPorJugador?"disabled":""}>➕</button>
+          <span class="contador" id="contador-${nombre}">${votos[nombre]}</span>
+          <button onclick="restarVoto('${nombre}')" ${votos[nombre]<=0?"disabled":""}>➖</button>
+        </div>
+      `;
+    });
+  }
+
+  function sumarVoto(nombre) {
+    if(votos[nombre] < maxVotosPorJugador) {
+      votos[nombre]++;
+      document.getElementById("contador-" + nombre).textContent = votos[nombre];
+      mostrarVotaciones();
+    }
+  }
+
+  function restarVoto(nombre) {
+    if(votos[nombre] > 0) {
+      votos[nombre]--;
+      document.getElementById("contador-" + nombre).textContent = votos[nombre];
+      mostrarVotaciones();
+    }
+  }
+
+  function terminarVotacion() {
+    // Buscar el/los más votados
+    let maxVotos = -1;
+    let masVotados = [];
+    for (const nombre in votos) {
+      if (votos[nombre] > maxVotos) {
+        maxVotos = votos[nombre];
+        masVotados = [nombre];
+      } else if (votos[nombre] === maxVotos) {
+        masVotados.push(nombre);
+      }
+    }
+    // Mostrar resultado (si hay empate, mostrar todos)
+    let masVotadoTexto = '';
+    if (maxVotos === 0) {
+      masVotadoTexto = 'Nadie ha recibido votos.';
+      document.getElementById("resultadoFinal").innerHTML = '';
+    } else if (masVotados.length === 1) {
+      masVotadoTexto = `El más votado es <span style="color:#00fff7">${masVotados[0]}</span> con ${maxVotos} votos.`;
+    } else {
+      masVotadoTexto = `Empate entre: <span style="color:#00fff7">${masVotados.join(', ')}</span> (${maxVotos} votos cada uno).`;
+    }
+    document.getElementById("masVotado").innerHTML = masVotadoTexto;
+
+    let resultado = '';
+    if (maxVotos > 0) {
+      // Solo si hay algún votado
+      if (masVotados.length === 1) {
+        resultado = impostores.includes(masVotados[0])
+          ? '¡Era IMPOSTOR! 🎉'
+          : 'No era impostor 😱';
+      } else {
+        // Empate
+        let hayImpostor = masVotados.some(n => impostores.includes(n));
+        resultado = hayImpostor
+          ? '¡Al menos uno era IMPOSTOR! 🎉'
+          : 'Ninguno era impostor 😱';
+      }
+    }
+    document.getElementById("resultadoFinal").innerHTML = resultado;
+    cambiarPanel('resultadoPanel');
+  }
+
+  function volverAVotar() {
+    cambiarPanel('votaciones');
+  }
+
   function reiniciarJuego() {
     jugadores = [];
     impostores = [];
     palabra = "";
     tematicaSeleccionada = "";
+    votos = {};
+    maxVotosPorJugador = 0;
     document.getElementById("nuevoJugador").value = "";
     document.getElementById("nombreConsulta").value = "";
     document.getElementById("nombres").innerHTML = "";
     document.getElementById("resultado").innerHTML = "";
     document.getElementById("numImpostores").value = "";
     document.getElementById("selectTematica").selectedIndex = 0;
+    document.getElementById("listaVotaciones").innerHTML = "";
+    document.getElementById("masVotado").innerHTML = "";
+    document.getElementById("resultadoFinal").innerHTML = "";
     cambiarPanel('inicio');
   }
 </script>
