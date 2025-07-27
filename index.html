@@ -133,6 +133,20 @@
       color: #00fff7;
       text-shadow: 0 1px 10px #0099ff, 0 1px 2px #111;
     }
+    .panel .boton-volver {
+      margin-top: 1.5rem;
+      display: inline-block;
+    }
+    .panel .boton-otra-partida {
+      margin-top: 1.5rem;
+      display: inline-block;
+      background: #25c481;
+      color: #fff;
+      border: none;
+    }
+    .panel .boton-otra-partida:hover {
+      background: #206a5d;
+    }
   </style>
 </head>
 <body>
@@ -228,7 +242,8 @@
     <div class="card">
       <div id="masVotado"></div>
       <div id="resultadoFinal"></div>
-      <button onclick="volverAVotar()" style="margin-top:2rem;">⬅️ Volver a votar</button>
+      <button class="boton-volver" onclick="volverAVotar()">⬅️ Volver a votar</button>
+      <button class="boton-otra-partida" onclick="jugarOtraPartida()">🎲 Jugar otra partida con los mismos jugadores</button>
     </div>
   </div>
 
@@ -395,7 +410,6 @@
   }
 
   function terminarVotacion() {
-    // Buscar el/los más votados
     let maxVotos = -1;
     let masVotados = [];
     for (const nombre in votos) {
@@ -406,7 +420,6 @@
         masVotados.push(nombre);
       }
     }
-    // Mostrar resultado (si hay empate, mostrar todos)
     let masVotadoTexto = '';
     if (maxVotos === 0) {
       masVotadoTexto = 'Nadie ha recibido votos.';
@@ -420,13 +433,11 @@
 
     let resultado = '';
     if (maxVotos > 0) {
-      // Solo si hay algún votado
       if (masVotados.length === 1) {
         resultado = impostores.includes(masVotados[0])
           ? '¡Era IMPOSTOR! 🎉'
           : 'No era impostor 😱';
       } else {
-        // Empate
         let hayImpostor = masVotados.some(n => impostores.includes(n));
         resultado = hayImpostor
           ? '¡Al menos uno era IMPOSTOR! 🎉'
@@ -439,6 +450,22 @@
 
   function volverAVotar() {
     cambiarPanel('votaciones');
+  }
+
+  function jugarOtraPartida() {
+    // Solo resetea impostores, palabra, votos, tematicaSeleccionada y recuentos, pero NO jugadores.
+    impostores = [];
+    palabra = "";
+    tematicaSeleccionada = "";
+    votos = {};
+    maxVotosPorJugador = jugadores.length * 2;
+    jugadores.forEach(nombre => votos[nombre] = 0);
+    document.getElementById("numImpostores").value = "";
+    document.getElementById("selectTematica").selectedIndex = 0;
+    document.getElementById("resultado").innerHTML = "";
+    document.getElementById("masVotado").innerHTML = "";
+    document.getElementById("resultadoFinal").innerHTML = "";
+    cambiarPanel('tematicas');
   }
 
   function reiniciarJuego() {
